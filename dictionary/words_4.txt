@@ -1,0 +1,6 @@
+will
+have
+only
+four
+char
+word
