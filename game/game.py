@@ -9,22 +9,40 @@ def read_dictionary(length):
 
 def play(length):
   words = read_dictionary(length)
-  secret = random.choice(words).strip()
-  print("Your {} letter Lingo starts with {}... ".format(length, secret[0]))
   playing = True
   while playing:
-    guess = raw_input("Enter a guess\n").strip()
-    print("Your guess was {}".format(guess))
-    if guess_is_correct(secret, guess):
-      play_again = raw_input("You're right!\nPlay again? Enter Y/N\n")
-      playing = "Y" == play_again.upper()
-    else:
-      greens = calculate_greens(secret, guess)
-      yellows = calculate_yellows(secret, guess)
-      if greens:
-        print("Your guess was incorrect, but you did get some letters right!")
-        one, two, three = parse_greens(greens, guess)
-        print("Word is of the form {}{}{}{}".format(secret[0], one, two, three))
+    secret = random.choice(words).strip()
+    print("Your {} letter Lingo starts with {}... ".format(length, secret[0]))
+    guessing = True
+    while guessing:
+      guess = read_guess(length)
+      print("Your guess was {}".format(guess))
+      if guess_is_correct(secret, guess):
+        play_again = raw_input("You're right!\nPlay again? Enter Y/N\n")
+        guessing = False
+        playing = "Y" == play_again.upper()
+      else:
+        greens = calculate_greens(secret, guess)
+        yellows = calculate_yellows(secret, guess)
+        if greens:
+          one, two, three = parse_greens(greens, guess, "_")
+          # TODO only works for 4 letter words, fix
+          print("Incorrect, but you did get some letters right!\nThe word is of the form {}{}{}{}".format(secret[0], one, two, three))
+          if yellows:
+            yellows_str = ", ".join(yellows)
+            print("And the word contains these letters: {}".format(yellows_str))
+        elif yellows:
+          yellows_str = ", ".join(yellows)
+          print("Incorrect, but the word does contain these letters: {}".format(yellows_str))
+        else:
+          # TODO only works for 4 letter words, fix
+          print("Incorrect, try again: {}___".format(secret[0]))
+
+def read_guess(length):
+  guess = raw_input("Enter a guess\n").strip().lower()
+  while (len(guess) != length):
+    guess = raw_input("{} isn't a valid guess, please enter a {} letter word!\n".format(guess, length)).strip().lower()
+  return guess
 
 def guess_is_correct(secret, guess):
   return secret == guess
@@ -39,12 +57,17 @@ def calculate_greens(secret, guess):
 
 # Yellow refers to a correct letter in an incorrect index
 def calculate_yellows(secret, guess):
-  return set()
+  yellows = set()
+  for i in range(1, len(secret)):
+    if guess[i] in secret and guess[i] != secret[i]:
+      yellows.add(guess[i])
+  return yellows
 
-def parse_greens(greens, guess):
-  one = guess[1] if 1 in greens else "_"
-  two = guess[2] if 2 in greens else "_"
-  three = guess[3] if 3 in greens else "_"
+# TODO only works for 4 letter words, fix
+def parse_greens(green, guess, default):
+  one = guess[1] if 1 in green else default
+  two = guess[2] if 2 in green else default
+  three = guess[3] if 3 in green else default
   return one, two, three
 
 if __name__ == "__main__":
